@@ -18,10 +18,30 @@ namespace SchoolApp.Controllers
             _context = context;
         }
 
-        // GET: Students
-        public async Task<IActionResult> Index()
+        // GET: Students - Search students
+        public async Task<IActionResult> Index(string? searchString)
         {
-            return View(await _context.Student.ToListAsync());
+            // Start with all students
+            var students = from s in _context.Student
+                           select s;
+
+            // Check if the search box contains text
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                var text = searchString.ToLower();
+
+                // Search by name, student number, or email
+                students = students.Where(s =>
+                    s.Name!.ToLower().Contains(text) ||
+                    s.StudentNo!.ToLower().Contains(text) ||
+                    s.Email!.ToLower().Contains(text));
+            }
+
+            // Keep the search text in the search box
+            ViewData["searchString"] = searchString;
+
+            // Display the search results
+            return View(await students.ToListAsync());
         }
 
         // GET: Students/Details/5
